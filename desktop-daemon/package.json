@@ -1,0 +1,17 @@
+{
+  "name": "desktop-daemon",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "dotenv": "^17.4.2",
+    "socket.io-client": "^4.8.3"
+  }
+}
