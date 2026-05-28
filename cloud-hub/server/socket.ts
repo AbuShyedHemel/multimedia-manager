@@ -17,7 +17,7 @@ io.on("connection", async (socket) => {
     await redis.set(`pin:${pin}`, socket.id, "EX", 3600);
     await redis.set(`global:daemon:pin`, pin, "EX", 3600);
     await redis.set(`global:daemon:id`, socket.id, "EX", 3600);
-    
+
     socket.emit("registered", { pin });
     socket.join(`daemon_${socket.id}`);
 
@@ -33,15 +33,38 @@ io.on("connection", async (socket) => {
   console.log("Remote Client connected:", socket.id);
 
   socket.on("cmd:play_pause", (data) => {
-    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:play_pause");
+    if (data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:play_pause");
   });
 
   socket.on("cmd:volume_up", (data) => {
-    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:volume_up");
+    if (data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:volume_up");
   });
 
   socket.on("cmd:volume_down", (data) => {
-    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:volume_down");
+    if (data?.daemonId)
+      io.to(`daemon_${data.daemonId}`).emit("cmd:volume_down");
+  });
+
+  socket.on("cmd:seek_forward", (data) => {
+    if (data?.daemonId)
+      io.to(`daemon_${data.daemonId}`).emit("cmd:seek_forward");
+  });
+
+  socket.on("cmd:seek_backward", (data) => {
+    if (data?.daemonId)
+      io.to(`daemon_${data.daemonId}`).emit("cmd:seek_backward");
+  });
+
+  socket.on("cmd:request_status", (data) => {
+    if (data?.daemonId)
+      io.to(`daemon_${data.daemonId}`).emit("cmd:request_status");
+  });
+
+  // Receive status updates from daemon and broadcast to remote clients
+  socket.on("status:update", (payload) => {
+    console.log("status:update received from", socket.id, payload);
+    // broadcast to all connected clients (including daemon) — clients will filter
+    io.emit("status:update", payload);
   });
 });
 
