@@ -1,5 +1,9 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { Meta, Scripts } from "@tanstack/react-start";
+import {
+  Outlet,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+} from "@tanstack/react-router";
 import "../index.css";
 
 export const Route = createRootRoute({
@@ -10,7 +14,11 @@ function RootComponent() {
   return (
     <html>
       <head>
-        <Meta />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+        />
+        <HeadContent />
       </head>
       <body>
         <Outlet />

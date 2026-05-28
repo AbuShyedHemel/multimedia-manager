@@ -2,10 +2,10 @@
   "name": "cloud-hub",
   "version": "1.0.0",
   "scripts": {
-    "dev:web": "vite dev",
+    "dev:web": "vite dev --host",
     "dev:socket": "bun run server/socket.ts",
     "dev": "concurrently \"bun run dev:web\" \"bun run dev:socket\"",
-    "build": "vite build && vite build -c vite.config.server-entry.ts",
+    "build": "vite build",
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "vinxi": "^0.5.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

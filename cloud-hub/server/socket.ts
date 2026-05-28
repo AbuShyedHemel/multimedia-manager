@@ -1,9 +1,5 @@
 import { Server } from "socket.io";
 import { default as Redis } from "ioredis";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const redis = new Redis();
 const io = new Server({
@@ -12,49 +8,40 @@ const io = new Server({
   },
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
+io.on("connection", async (socket) => {
+  const type = socket.handshake.auth?.type;
 
-io.use((socket, next) => {
-  const token = socket.handshake.auth.token;
-  if (!token) {
-    return next(new Error("Authentication error"));
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    socket.data.user = decoded;
-    next();
-  } catch (err) {
-    next(new Error("Authentication error"));
-  }
-});
+  if (type === "daemon") {
+    console.log("Daemon connected:", socket.id);
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    await redis.set(`pin:${pin}`, socket.id, "EX", 3600);
+    await redis.set(`global:daemon:pin`, pin, "EX", 3600);
+    await redis.set(`global:daemon:id`, socket.id, "EX", 3600);
+    
+    socket.emit("registered", { pin });
+    socket.join(`daemon_${socket.id}`);
 
-io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id, "User:", socket.data.user?.id);
-
-  const userId = socket.data.user?.id;
-  if (userId) {
-    socket.join(`room_${userId}`);
-    console.log(`Socket ${socket.id} joined room_${userId}`);
+    socket.on("disconnect", async () => {
+      console.log("Daemon disconnected:", socket.id);
+      await redis.del(`pin:${pin}`);
+      await redis.del(`global:daemon:pin`);
+      await redis.del(`global:daemon:id`);
+    });
+    return;
   }
 
-  socket.on("cmd:play_pause", () => {
-    console.log("Relaying cmd:play_pause to room");
-    // Broadcast to others in the room (the desktop daemon)
-    socket.to(`room_${userId}`).emit("cmd:play_pause");
+  console.log("Remote Client connected:", socket.id);
+
+  socket.on("cmd:play_pause", (data) => {
+    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:play_pause");
   });
 
-  socket.on("cmd:volume_up", () => {
-    console.log("Relaying cmd:volume_up to room");
-    socket.to(`room_${userId}`).emit("cmd:volume_up");
+  socket.on("cmd:volume_up", (data) => {
+    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:volume_up");
   });
 
-  socket.on("cmd:volume_down", () => {
-    console.log("Relaying cmd:volume_down to room");
-    socket.to(`room_${userId}`).emit("cmd:volume_down");
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+  socket.on("cmd:volume_down", (data) => {
+    if(data?.daemonId) io.to(`daemon_${data.daemonId}`).emit("cmd:volume_down");
   });
 });
 
