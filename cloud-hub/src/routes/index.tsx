@@ -330,7 +330,9 @@ function Dashboard() {
         <div className="mt-8 text-center pb-6">
           <div className="text-sm font-medium text-slate-500 flex flex-col items-center justify-center gap-2">
             <p className="flex items-center gap-3">
-              <span className={`relative flex h-3 w-3 ${socketConnected ? '': 'opacity-40'}`}>
+              <span
+                className={`relative flex h-3 w-3 ${socketConnected ? "" : "opacity-40"}`}
+              >
                 {socketConnected ? (
                   <>
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -340,15 +342,21 @@ function Dashboard() {
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-slate-600"></span>
                 )}
               </span>
-              {socketConnected ? 'Socket connected' : 'Socket disconnected'}
+              {socketConnected ? "Socket connected" : "Socket disconnected"}
             </p>
             {lastStatusAt ? (
-              <p className="text-xs text-slate-400">Last status: {Math.max(0, Math.round((Date.now() - lastStatusAt) / 1000))}s ago</p>
+              <p className="text-xs text-slate-400">
+                Last status:{" "}
+                {Math.max(0, Math.round((Date.now() - lastStatusAt) / 1000))}s
+                ago
+              </p>
             ) : (
               <p className="text-xs text-amber-300">No status received yet</p>
             )}
             {lastStatusPayload && (
-              <pre className="text-xs text-slate-500 mt-2">{JSON.stringify(lastStatusPayload)}</pre>
+              <pre className="text-xs text-slate-500 mt-2">
+                {JSON.stringify(lastStatusPayload)}
+              </pre>
             )}
           </div>
         </div>
